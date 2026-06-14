@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Waiter Dashboard</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: sans-serif; background: #f0f0f0; padding: 20px; }
+    h1 { margin-bottom: 20px; font-size: 1.4rem; }
+    .call { background: white; border-left: 5px solid #c0392b; border-radius: 8px;
+            padding: 16px; margin-bottom: 12px; display: flex;
+            justify-content: space-between; align-items: center; }
+    .call.done { border-left-color: #27ae60; opacity: 0.5; }
+    .table-num { font-size: 1.3rem; font-weight: bold; }
+    .time { color: #888; font-size: 0.85rem; margin-top: 4px; }
+    .done-btn { background: #27ae60; color: white; border: none; padding: 10px 18px;
+             border-radius: 6px; cursor: pointer; font-size: 0.9rem; }
+    .handled { color: #27ae60; font-weight: bold; }
+    .empty { text-align: center; color: #aaa; margin-top: 80px; font-size: 1.1rem; }
+  </style>
+</head>
+<body>
+
+<h1>🔔 Waiter Calls — Joe's Cafe</h1>
+<div id="calls-container"><p class="empty">No calls yet — you're all good!</p></div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDVACR6Ejo5oYPl4oHinf3j2XbU1CkmgbM",
+    authDomain: "digital-menu-service.firebaseapp.com",
+    databaseURL: "https://digital-menu-service-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "digital-menu-service",
+    storageBucket: "digital-menu-service.firebasestorage.app",
+    messagingSenderId: "970650952018",
+    appId: "1:970650952018:web:bac1a419e24e39ff155a8b"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  const container = document.getElementById("calls-container");
+
+  onValue(ref(db, "calls/joes-cafe"), (snapshot) => {
+    const data = snapshot.val();
+    container.innerHTML = "";
+    if (!data) {
+      container.innerHTML = `<p class="empty">No calls yet — you're all good!</p>`;
+      return;
+    }
+    Object.entries(data).reverse().forEach(([id, call]) => {
+      const div = document.createElement("div");
+      div.className = `call ${call.done ? "done" : ""}`;
+      div.innerHTML = `
+        <div>
+          <div class="table-num">Table ${call.table}</div>
+          <div class="time">${call.time}</div>
+        </div>
+        ${!call.done
+          ? `<button class="done-btn" onclick="markDone('${id}')">✓ Done</button>`
+          : `<span class="handled">✓ Handled</span>`}
+      `;
+      container.appendChild(div);
+    });
+  });
+
+  window.markDone = function (id) {
+    update(ref(db, `calls/joes-cafe/${id}`), { done: true });
+  };
+</script>
+
+</body>
+</html>

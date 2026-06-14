@@ -1,20 +1,59 @@
 {
-  "restaurant": "Joe's Cafe",
-  "primaryColor": "#c0392b",
-  "tables": 8,
+  "restaurant": "Hotel Khaja Empire",
+  "primaryColor": "#c8a200",
+  "tables": 10,
   "categories": [
     {
-      "name": "Starters",
+      "name": "Breads",
       "items": [
-        { "name": "Soup of the Day", "price": 120, "description": "Ask your waiter" },
-        { "name": "Garlic Bread", "price": 80, "description": "With herb butter" }
+        { "name": "Kerala Parota", "price": 30, "description": "" },
+        { "name": "Pulka (3)", "price": 36, "description": "" },
+        { "name": "Naan", "price": 25, "description": "" },
+        { "name": "Butter Naan", "price": 30, "description": "" },
+        { "name": "Tandoori Roti", "price": 20, "description": "" },
+        { "name": "Tandoori Parota", "price": 35, "description": "" },
+        { "name": "Kulcha", "price": 35, "description": "" },
+        { "name": "Aloo Parota", "price": 35, "description": "" },
+        { "name": "Ramali Roti", "price": 25, "description": "" },
+        { "name": "Semiya Idyappam", "price": 40, "description": "" }
       ]
     },
     {
-      "name": "Mains",
+      "name": "Starters - Veg",
       "items": [
-        { "name": "Grilled Chicken", "price": 320, "description": "With seasonal vegetables" },
-        { "name": "Pasta Arrabiata", "price": 260, "description": "Spicy tomato sauce" }
+        { "name": "Gobi 65", "price": 100, "description": "" },
+        { "name": "Mushroom Fry", "price": 100, "description": "" },
+        { "name": "Chilli Paneer Dry", "price": 100, "description": "" },
+        { "name": "Paneer 65", "price": 100, "description": "" },
+        { "name": "Masala Pappad", "price": 50, "description": "" },
+        { "name": "Roasted Papad", "price": 10, "description": "" },
+        { "name": "Dragon Paneer", "price": 110, "description": "" },
+        { "name": "Bhindi Fry", "price": 100, "description": "" }
+      ]
+    },
+    {
+      "name": "Veg Gravy",
+      "items": [
+        { "name": "Veg Mix Masala", "price": 90, "description": "" },
+        { "name": "Veg Kurma", "price": 90, "description": "" },
+        { "name": "Bhindi Masala", "price": 90, "description": "" },
+        { "name": "Gobi Masala", "price": 90, "description": "" },
+        { "name": "Aalon Mutter Masala", "price": 90, "description": "" },
+        { "name": "Damaloo Jaipuri", "price": 90, "description": "" },
+        { "name": "Veg Kadai Sabji", "price": 90, "description": "" },
+        { "name": "Nawratan Kurma", "price": 90, "description": "" },
+        { "name": "Malai Kofta", "price": 90, "description": "" },
+        { "name": "Veg Dopiyaza", "price": 100, "description": "" },
+        { "name": "Dhall Fry", "price": 80, "description": "" },
+        { "name": "Dhall Tatoka", "price": 90, "description": "" },
+        { "name": "Dhall Makhani", "price": 90, "description": "" },
+        { "name": "Paneer Butter Masala", "price": 100, "description": "" },
+        { "name": "Palak Paneer", "price": 100, "description": "" },
+        { "name": "Mushroom Masala", "price": 100, "description": "" },
+        { "name": "Shahi Paneer", "price": 100, "description": "" },
+        { "name": "Channa Masala", "price": 90, "description": "" },
+        { "name": "Green Peas Masala", "price": 90, "description": "" },
+        { "name": "Aloo Zeera", "price": 90, "description": "" }
       ]
     }
   ]

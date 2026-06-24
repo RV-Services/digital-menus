@@ -6,24 +6,56 @@
   <title>Waiter Dashboard</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: sans-serif; background: #f0f0f0; padding: 20px; }
-    h1 { margin-bottom: 20px; font-size: 1.4rem; }
-    .call { background: white; border-left: 5px solid #c0392b; border-radius: 8px;
-            padding: 16px; margin-bottom: 12px; display: flex;
-            justify-content: space-between; align-items: center; }
-    .call.done { border-left-color: #27ae60; opacity: 0.5; }
-    .table-num { font-size: 1.3rem; font-weight: bold; }
-    .time { color: #888; font-size: 0.85rem; margin-top: 4px; }
-    .done-btn { background: #27ae60; color: white; border: none; padding: 10px 18px;
-             border-radius: 6px; cursor: pointer; font-size: 0.9rem; }
-    .handled { color: #27ae60; font-weight: bold; }
-    .empty { text-align: center; color: #aaa; margin-top: 80px; font-size: 1.1rem; }
+    body { font-family: sans-serif; background: #f0f0f0; padding: 16px; padding-bottom: 40px; }
+    h1 { margin-bottom: 16px; font-size: 1.3rem; }
+
+    .tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+    .tab { flex: 1; padding: 10px; border: none; border-radius: 8px; font-size: 0.95rem;
+           font-weight: bold; cursor: pointer; background: #ddd; color: #555; }
+    .tab.active { background: var(--primary, #c0392b); color: white; }
+
+    .section { display: none; }
+    .section.active { display: block; }
+
+    .card { background: white; border-radius: 10px; padding: 16px; margin-bottom: 12px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+    .card.done { opacity: 0.45; }
+    .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .table-num { font-size: 1.2rem; font-weight: bold; }
+    .time { font-size: 0.8rem; color: #999; }
+    .order-items { font-size: 0.88rem; color: #444; line-height: 1.7; margin-bottom: 10px; }
+    .order-total { font-weight: bold; color: var(--primary, #c0392b); font-size: 0.95rem; margin-bottom: 10px; }
+    .card-actions { display: flex; gap: 8px; }
+
+    .confirm-btn { flex: 1; background: #27ae60; color: white; border: none;
+                   border-radius: 6px; padding: 10px; font-size: 0.9rem;
+                   font-weight: bold; cursor: pointer; }
+    .done-btn { flex: 1; background: #888; color: white; border: none;
+                border-radius: 6px; padding: 10px; font-size: 0.9rem; cursor: pointer; }
+    .confirmed-tag { color: #27ae60; font-weight: bold; font-size: 0.9rem; }
+    .empty { text-align: center; color: #bbb; margin-top: 60px; font-size: 1rem; }
+
+    .badge { background: #c0392b; color: white; border-radius: 50%; width: 20px; height: 20px;
+             font-size: 0.7rem; font-weight: bold; display: inline-flex;
+             align-items: center; justify-content: center; margin-left: 6px; }
   </style>
 </head>
 <body>
 
-<h1>🔔 Waiter Calls — Joe's Cafe</h1>
-<div id="calls-container"><p class="empty">No calls yet — you're all good!</p></div>
+<h1>🍽️ Waiter Dashboard</h1>
+
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('orders')">Orders <span class="badge" id="order-badge">0</span></button>
+  <button class="tab" onclick="switchTab('calls')">Calls <span class="badge" id="call-badge">0</span></button>
+</div>
+
+<div class="section active" id="orders-section">
+  <div id="orders-container"><p class="empty">No orders yet.</p></div>
+</div>
+
+<div class="section" id="calls-section">
+  <div id="calls-container"><p class="empty">No calls yet — you're all good!</p></div>
+</div>
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
@@ -41,33 +73,92 @@
 
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
-  const container = document.getElementById("calls-container");
+  const RESTAURANT_KEY = "joes-cafe"; // change this per restaurant
 
-  onValue(ref(db, "calls/joes-cafe"), (snapshot) => {
+  // Listen to orders
+  onValue(ref(db, `orders/${RESTAURANT_KEY}`), (snapshot) => {
     const data = snapshot.val();
+    const container = document.getElementById("orders-container");
     container.innerHTML = "";
     if (!data) {
-      container.innerHTML = `<p class="empty">No calls yet — you're all good!</p>`;
+      container.innerHTML = `<p class="empty">No orders yet.</p>`;
+      document.getElementById("order-badge").textContent = "0";
       return;
     }
-    Object.entries(data).reverse().forEach(([id, call]) => {
+    const entries = Object.entries(data).reverse();
+    const pending = entries.filter(([, o]) => o.status === "pending").length;
+    document.getElementById("order-badge").textContent = pending;
+
+    entries.forEach(([id, order]) => {
       const div = document.createElement("div");
-      div.className = `call ${call.done ? "done" : ""}`;
+      div.className = `card ${order.status === "done" ? "done" : ""}`;
+      const itemsList = order.items.map(i => `${i.qty}× ${i.name}`).join("\n");
       div.innerHTML = `
-        <div>
-          <div class="table-num">Table ${call.table}</div>
-          <div class="time">${call.time}</div>
+        <div class="card-header">
+          <span class="table-num">Table ${order.table}</span>
+          <span class="time">${order.time}</span>
         </div>
-        ${!call.done
-          ? `<button class="done-btn" onclick="markDone('${id}')">✓ Done</button>`
-          : `<span class="handled">✓ Handled</span>`}
-      `;
+        <div class="order-items">${itemsList}</div>
+        <div class="order-total">Total: ₹${order.total}</div>
+        <div class="card-actions">
+          ${order.status === "pending"
+            ? `<button class="confirm-btn" onclick="confirmOrder('${id}')">✓ Confirm Order</button>`
+            : order.status === "confirmed"
+            ? `<span class="confirmed-tag">✅ Confirmed</span>
+               <button class="done-btn" onclick="markOrderDone('${id}')">Mark Done</button>`
+            : `<span style="color:#888">✔ Done</span>`}
+        </div>`;
       container.appendChild(div);
     });
   });
 
-  window.markDone = function (id) {
-    update(ref(db, `calls/joes-cafe/${id}`), { done: true });
+  // Listen to calls
+  onValue(ref(db, `calls/${RESTAURANT_KEY}`), (snapshot) => {
+    const data = snapshot.val();
+    const container = document.getElementById("calls-container");
+    container.innerHTML = "";
+    if (!data) {
+      container.innerHTML = `<p class="empty">No calls yet — you're all good!</p>`;
+      document.getElementById("call-badge").textContent = "0";
+      return;
+    }
+    const entries = Object.entries(data).reverse();
+    const pending = entries.filter(([, c]) => !c.done).length;
+    document.getElementById("call-badge").textContent = pending;
+
+    entries.forEach(([id, call]) => {
+      const div = document.createElement("div");
+      div.className = `card ${call.done ? "done" : ""}`;
+      div.innerHTML = `
+        <div class="card-header">
+          <span class="table-num">Table ${call.table}</span>
+          <span class="time">${call.time}</span>
+        </div>
+        <div class="card-actions">
+          ${!call.done
+            ? `<button class="confirm-btn" onclick="markCallDone('${id}')">✓ Handled</button>`
+            : `<span style="color:#888">✔ Handled</span>`}
+        </div>`;
+      container.appendChild(div);
+    });
+  });
+
+  window.confirmOrder = function(id) {
+    update(ref(db, `orders/${RESTAURANT_KEY}/${id}`), { status: "confirmed" });
+  };
+  window.markOrderDone = function(id) {
+    update(ref(db, `orders/${RESTAURANT_KEY}/${id}`), { status: "done" });
+  };
+  window.markCallDone = function(id) {
+    update(ref(db, `calls/${RESTAURANT_KEY}/${id}`), { done: true });
+  };
+
+  // Tab switching
+  window.switchTab = function(tab) {
+    document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+    document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
+    document.getElementById(`${tab}-section`).classList.add("active");
+    event.target.classList.add("active");
   };
 </script>
 
